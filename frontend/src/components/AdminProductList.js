@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AddItem from "../AddItem"; // make sure the path is correct
+import API_BASE_URL from "../config";
 
 export default function AdminProductList() {
   const [adminProductList, setAdminProductList] = useState([]);
@@ -10,7 +11,7 @@ export default function AdminProductList() {
     if (!userId) return;
 
     axios
-      .get("http://localhost:5001/api/admin")
+      .get(`${API_BASE_URL}/api/admin`)
       .then((response) => {
         setAdminProductList(response.data);
       })
@@ -24,7 +25,7 @@ export default function AdminProductList() {
     if (!removedProduct || !userId) return;
 
     axios
-      .delete(`http://localhost:5001/api/admin/${removedProduct.id}`)
+      .delete(`${API_BASE_URL}/api/admin/${removedProduct.id}`)
       .then(() => {
         const newList = [...adminProductList];
         newList.splice(index, 1);
@@ -39,7 +40,7 @@ export default function AdminProductList() {
     if (!userId) return;
 
     axios
-      .post("http://localhost:5001/api/admin", {
+      .post(`${API_BASE_URL}/api/admin`, {
         name,
         price,
         quantity,
@@ -67,7 +68,7 @@ export default function AdminProductList() {
   }
   const editProduct = async () => {
     try {
-      await axios.put("http://localhost:5001/api/admin/edit", {
+      await axios.put(`${API_BASE_URL}/api/admin/edit`, {
         id: editingProductId,
         name: editingProductName,
         price: editingProductPrice,
@@ -78,7 +79,7 @@ export default function AdminProductList() {
       alert("Product updated");
 
       // Refresh product list after edit
-      const res = await axios.get("http://localhost:5001/api/admin");
+      const res = await axios.get(`${API_BASE_URL}/api/admin`);
       setAdminProductList(res.data);
 
       setEditingProductId(null);

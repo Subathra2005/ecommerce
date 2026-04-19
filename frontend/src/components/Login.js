@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
+import API_BASE_URL from '../config';
 
 
 const Login = ({ onLogin, onSwitchToSignup }) => {
@@ -10,7 +11,7 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5001/api/cart/login', { email, password });
+      const res = await axios.post(`${API_BASE_URL}/api/cart/login`, { email, password });
       if (res.data.success) {
         alert('Login successful!');
         const { userId, role } = res.data;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Footer from "./Footer"; 
+import API_BASE_URL from "../config";
 
 export default function ProductList() {
   const [productList, setProductList] = useState([]);
@@ -12,7 +13,7 @@ export default function ProductList() {
     if (!userId) return;
 
     axios
-      .get(`http://localhost:5001/api/cart?userId=${userId}`)
+      .get(`${API_BASE_URL}/api/cart?userId=${userId}`)
       .then((response) => {
         setProductList(response.data);
         const total = response.data.reduce(
@@ -28,7 +29,7 @@ export default function ProductList() {
   
   const getQuantity = async (productId) => {
   try {
-    const response = await axios.get(`http://localhost:5001/api/admin/${productId}`);
+    const response = await axios.get(`${API_BASE_URL}/api/admin/${productId}`);
     return response.data.quantity;
   } catch (error) {
     console.error('Error fetching product quantity:', error);
@@ -40,7 +41,7 @@ const [userEmail, setUserEmail] = useState('');
   useEffect(() => {
     const fetchUserEmail = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/api/cart/email`, {
+        const response = await axios.get(`${API_BASE_URL}/api/cart/email`, {
           params: { userId },
         });
         setUserEmail(response.data.email); 
@@ -70,7 +71,7 @@ const [userEmail, setUserEmail] = useState('');
     setTotalAmount((prevTotal) => prevTotal + Number(productToUpdate.price));
 
     axios
-      .put(`http://localhost:5001/api/cart/${productToUpdate.id}`, {
+      .put(`${API_BASE_URL}/api/cart/${productToUpdate.id}`, {
         name: productToUpdate.name,
         price: productToUpdate.price,
         quantity: productToUpdate.quantity,
@@ -99,7 +100,7 @@ const [userEmail, setUserEmail] = useState('');
       setTotalAmount((prevTotal) => prevTotal - Number(productToUpdate.price));
 
       axios
-        .put(`http://localhost:5001/api/cart/${productToUpdate.id}`, {
+        .put(`${API_BASE_URL}/api/cart/${productToUpdate.id}`, {
           name: productToUpdate.name,
           price: productToUpdate.price,
           quantity: productToUpdate.quantity,
@@ -120,7 +121,7 @@ const [userEmail, setUserEmail] = useState('');
     const deduction = removedProduct.quantity * removedProduct.price;
 
     axios
-      .delete(`http://localhost:5001/api/cart/${removedProduct.id}`, {
+      .delete(`${API_BASE_URL}/api/cart/${removedProduct.id}`, {
         data: { userId },
       })
       .then(() => {
@@ -146,7 +147,7 @@ const [userEmail, setUserEmail] = useState('');
 
     Promise.all(
       resetProducts.map((product) =>
-        axios.put(`http://localhost:5001/api/cart/${product.id}`, {
+        axios.put(`${API_BASE_URL}/api/cart/${product.id}`, {
           name: product.name,
           price: product.price,
           quantity: 0,

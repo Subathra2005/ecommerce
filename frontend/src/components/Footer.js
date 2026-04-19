@@ -1,10 +1,11 @@
 import React from 'react'
 import axios from 'axios';
+import API_BASE_URL from '../config';
 
 export default function Footer(props) {
   const handleCheckout = async () => {
   try {
-    const response = await axios.post('http://localhost:5001/api/cart/checkout', {
+    const response = await axios.post(`${API_BASE_URL}/api/cart/checkout`, {
       userId: props.userId,
       email: props.email
     });

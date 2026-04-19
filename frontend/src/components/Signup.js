@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config';
 
 const Signup = ({ onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
@@ -9,7 +10,7 @@ const Signup = ({ onSwitchToLogin }) => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5001/api/cart/signup', { email, password,address });
+      const res = await axios.post(`${API_BASE_URL}/api/cart/signup`, { email, password,address });
       if (res.data && res.data.success) {
         alert('Signup successful. Please login.');
         onSwitchToLogin();

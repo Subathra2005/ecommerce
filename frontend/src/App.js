@@ -10,6 +10,7 @@ import Signup from "./components/Signup";
 import AdminProductList from "./components/AdminProductList";
 import Orders from "./components/Orders"; // 👈 make sure you created this file
 import Products from "./components/Products";
+import API_BASE_URL from "./config";
 
 function App() {
   const [userId, setUserId] = useState(() => {
@@ -25,7 +26,7 @@ function App() {
   useEffect(() => {
   const findRole = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/admin/role`, {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/role`, {
         params: { userId },
       });
       const userRole = response.data.role;

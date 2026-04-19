@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import API_BASE_URL from "../config";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -7,7 +8,7 @@ const Orders = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("http://localhost:5001/api/admin/orders");
+      const res = await axios.get(`${API_BASE_URL}/api/admin/orders`);
       setOrders(res.data);
     } catch (err) {
       console.error("Error fetching orders:", err);
@@ -19,7 +20,7 @@ const Orders = () => {
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       await axios.post(
-        `http://localhost:5001/api/admin/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         { status: newStatus }
       );
       alert(`Order ${newStatus}`);

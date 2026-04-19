@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../config';
 
 // Updated Product component with button next to price
 const Product = ({ product, onAddToCart }) => (
@@ -21,7 +22,7 @@ const Product = ({ product, onAddToCart }) => (
 
 // Add product to cart via API
 const addProductToCart = (product, userId) => {
-  return axios.post('http://localhost:5001/api/cart', {
+  return axios.post(`${API_BASE_URL}/api/cart`, {
     name: product.name,
     price: product.price,
     userId,
@@ -36,7 +37,7 @@ const Products = ({ userId }) => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5001/api/admin')
+      .get(`${API_BASE_URL}/api/admin`)
       .then((response) => {
         setProductList(response.data);
       })
