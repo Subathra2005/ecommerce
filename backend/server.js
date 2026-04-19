@@ -13,15 +13,9 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    const isVercelPreview = typeof origin === 'string' && origin.endsWith('.vercel.app');
-    if (!origin || allowedOrigins.includes(origin) || isVercelPreview) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'],
-  credentials: true
+  credentials: false
 }));
 app.use(express.json());
 app.use(bodyParser.json());
