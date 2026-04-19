@@ -17,8 +17,6 @@ function App() {
     return localStorage.getItem("userId") || null;
   });
 
-  const [productList, setProductList] = useState([]);
-  const [totalAmount, setTotalAmount] = useState(0);
   const [showLogin, setShowLogin] = useState(true);
   const [role, setRole] = useState("buyer");
   const navigate = useNavigate();
@@ -52,13 +50,11 @@ useEffect(() => {
       navigate("/products");
     }
   }
-}, [userId, role]);
+}, [userId, role, navigate]);
 
 
   const handleLogout = () => {
     setUserId(null);
-    setProductList([]);
-    setTotalAmount(0);
     navigate('/');
   };
 
