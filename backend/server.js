@@ -5,8 +5,20 @@ const cors= require('cors');
 
 
 const app = express();
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    const isVercelPreview = typeof origin === 'string' && origin.endsWith('.vercel.app');
+    if (!origin || allowedOrigins.includes(origin) || isVercelPreview) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'],
   credentials: true
 }));

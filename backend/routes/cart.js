@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 
 router.get("/", (req, res) => {
   const { userId } = req.query;
@@ -152,8 +153,6 @@ router.post("/login", async (req, res) => {
     }
   });
 });
-const nodemailer = require("nodemailer");
-
 router.post("/checkout", async (req, res) => {
   const { userId, email } = req.body;
 
@@ -233,18 +232,18 @@ router.post("/checkout", async (req, res) => {
           .join("\n");
 
         const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 465,
-          secure: true,
-          service: "gmail",
+          host: process.env.SMTP_HOST || "smtp.gmail.com",
+          port: Number(process.env.SMTP_PORT || 465),
+          secure: String(process.env.SMTP_SECURE || "true") === "true",
+          service: process.env.SMTP_SERVICE || "gmail",
           auth: {
-            user: "subathrar2005@gmail.com",
-            pass: "oufkctkysezfxyqq",
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
           },
         });
 
         await transporter.sendMail({
-          from: "subathrar2005@gmail.com",
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
           to: email,
           subject: "Purchase Confirmation",
           text: `Thank you for your purchase!\n\nItems:\n${itemsList}\n\nTotal: ₹${totalAmount}\nDate: ${orderDate}`,

@@ -96,17 +96,19 @@ router.post('/orders/:id/status', async (req, res) => {
 
   await db.promise().query('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
 
-  const details = order.order_details;
+  const details = typeof order.order_details === 'string'
+    ? JSON.parse(order.order_details)
+    : order.order_details;
   const itemsList = details.map(i => `${i.name} x${i.quantity} - $${i.price}`).join('\n');
 
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    service: 'gmail',
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT || 465),
+    secure: String(process.env.SMTP_SECURE || 'true') === 'true',
+    service: process.env.SMTP_SERVICE || 'gmail',
     auth: {
-      user: 'subathrar2005@gmail.com',
-      pass: 'oufkctkysezfxyqq'
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
     }
   });
 
@@ -116,7 +118,7 @@ router.post('/orders/:id/status', async (req, res) => {
       : `Your order (ID: ${orderId}) has been rejected.\n\nItems:\n${itemsList}`;
 
   await transporter.sendMail({
-    from: 'subathrar2005@gmail.com',
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to: user.email,
     subject: `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
     text: mailText
