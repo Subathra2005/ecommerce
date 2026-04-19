@@ -8,7 +8,8 @@ const app = express();
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'https://ecommerce-2005.vercel.app'
 ].filter(Boolean);
 
 app.use(cors({
