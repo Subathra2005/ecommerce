@@ -165,6 +165,11 @@ const [userEmail, setUserEmail] = useState('');
       });
   };
 
+  const handleCheckoutSuccess = () => {
+    setProductList([]);
+    setTotalAmount(0);
+  };
+
   const Product = ({ product, index }) => (
   <div className="col-md-4 mb-4">
     <div className="card text-center shadow">
@@ -220,7 +225,13 @@ const [userEmail, setUserEmail] = useState('');
         <h2>No products exist in the cart</h2>
       )}
       </div>
-    <Footer userId={userId} email={userEmail} totalAmount={totalAmount} resetQuantity={resetQuantity} />
+    <Footer
+      userId={userId}
+      email={userEmail}
+      totalAmount={totalAmount}
+      resetQuantity={resetQuantity}
+      onCheckoutSuccess={handleCheckoutSuccess}
+    />
     </div>
   );
 }

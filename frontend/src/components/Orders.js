@@ -19,15 +19,17 @@ const Orders = () => {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         { status: newStatus }
       );
-      alert(`Order ${newStatus}`);
+
+      const warning = response.data?.warning;
+      alert(warning ? `${response.data.message}\n${warning}` : (response.data?.message || `Order ${newStatus}`));
       fetchOrders(); // Refresh after update
     } catch (err) {
       console.error("Status update failed:", err);
-      alert("Failed to update order status");
+      alert(err.response?.data?.message || "Failed to update order status");
     }
   };
 

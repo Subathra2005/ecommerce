@@ -65,12 +65,14 @@ function App() {
             <Route path="/" element={<Navigate to="/admin/products" />} />
             <Route path="/admin/products" element={<AdminProductList />} />
             <Route path="/admin/orders" element={<Orders />} />
+            <Route path="*" element={<Navigate to="/admin/products" replace />} />
           </Routes>
         ) : (
           <Routes>
             <Route path="/" element={<Navigate to="/products" />} />
             <Route path="/products" element={<Products userId={userId} />} />
             <Route path="/cart" element={<ProductList userId={userId} />} />
+            <Route path="*" element={<Navigate to="/products" replace />} />
           </Routes>
         )}
       </div>

@@ -10,6 +10,10 @@ export default function Footer(props) {
       email: props.email
     });
 
+      if (response.data?.success) {
+        props.onCheckoutSuccess?.(response.data);
+      }
+
       const warning = response.data?.warning;
       alert(warning ? `${response.data.message}\n${warning}` : response.data.message);
   } catch (err) {
