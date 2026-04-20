@@ -89,42 +89,66 @@ router.post('/orders/:id/status', async (req, res) => {
   const { status } = req.body; // 'accepted' or 'rejected'
   const orderId = req.params.id;
 
-  const [[order]] = await db.promise().query('SELECT * FROM orders WHERE id = ?', [orderId]);
-  if (!order) return res.status(404).json({ message: 'Order not found' });
+  if (!["accepted", "rejected"].includes(status)) {
+    return res.status(400).json({ message: 'Invalid order status' });
+  }
 
-  const [[user]] = await db.promise().query('SELECT email FROM users WHERE id = ?', [order.user_id]);
+  try {
+    const [[order]] = await db.promise().query('SELECT * FROM orders WHERE id = ?', [orderId]);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
 
-  await db.promise().query('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
+    const [[user]] = await db.promise().query('SELECT email FROM users WHERE id = ?', [order.user_id]);
 
-  const details = typeof order.order_details === 'string'
-    ? JSON.parse(order.order_details)
-    : order.order_details;
-  const itemsList = details.map(i => `${i.name} x${i.quantity} - $${i.price}`).join('\n');
+    await db.promise().query('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: Number(process.env.SMTP_PORT || 465),
-    secure: String(process.env.SMTP_SECURE || 'true') === 'true',
-    service: process.env.SMTP_SERVICE || 'gmail',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
+    const details = typeof order.order_details === 'string'
+      ? JSON.parse(order.order_details)
+      : order.order_details;
+    const itemsList = details.map(i => `${i.name} x${i.quantity} - $${i.price}`).join('\n');
+
+    let emailStatus = 'skipped';
+    let warning = null;
+    const hasSmtpCredentials = Boolean(process.env.SMTP_USER) && Boolean(process.env.SMTP_PASS);
+
+    const mailText =
+      status === 'accepted'
+        ? `Your order (ID: ${orderId}) has been delivered.\n\nItems:\n${itemsList}`
+        : `Your order (ID: ${orderId}) has been rejected.\n\nItems:\n${itemsList}`;
+
+    if (user?.email && hasSmtpCredentials) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST || 'smtp.gmail.com',
+          port: Number(process.env.SMTP_PORT || 465),
+          secure: String(process.env.SMTP_SECURE || 'true') === 'true',
+          service: process.env.SMTP_SERVICE || 'gmail',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+          }
+        });
+
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: user.email,
+          subject: `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+          text: mailText
+        });
+        emailStatus = 'sent';
+      } catch (mailErr) {
+        emailStatus = 'failed';
+        warning = 'Order status updated, but email could not be sent.';
+        console.error('Order status email failed:', mailErr.message);
+      }
+    } else {
+      warning = 'Order status updated, but email is not configured on the server.';
     }
-  });
 
-  const mailText =
-    status === 'accepted'
-      ? `Your order (ID: ${orderId}) has been delivered.\n\nItems:\n${itemsList}`
-      : `Your order (ID: ${orderId}) has been rejected.\n\nItems:\n${itemsList}`;
-
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to: user.email,
-    subject: `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-    text: mailText
-  });
-
-  res.json({ success: true, message: `Order ${status}` });
+    res.json({ success: true, message: `Order ${status}`, emailStatus, warning });
+  } catch (err) {
+    console.error('Order status update error:', err);
+    res.status(500).json({ message: 'Failed to update order status', error: err.message });
+  }
 });
 router.get('/:id', (req, res) => {
   const productId = req.params.id;
