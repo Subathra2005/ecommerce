@@ -12,7 +12,7 @@ const Navbar = ({ userId, role, onLogout }) => {
 
         {userId && (
           <div className="d-flex align-items-center gap-3">
-            {role === "buyer" && (
+            {role !== "admin" && (
               <>
                 <Link className="nav-link text-white" to="/products">
                   Products

@@ -42,17 +42,6 @@ function App() {
   }
 }, [userId]);
 
-useEffect(() => {
-  if (userId && role) {
-    if (role === "admin") {
-      navigate("/admin/products");
-    } else {
-      navigate("/products");
-    }
-  }
-}, [userId, role, navigate]);
-
-
   const handleLogout = () => {
     setUserId(null);
     navigate('/');
@@ -71,17 +60,17 @@ useEffect(() => {
           ) : (
             <Signup onSwitchToLogin={() => setShowLogin(true)} />
           )
-        ) : role === "buyer" ? (
-          <Routes>
-            <Route path="/" element={<Navigate to="/products" />} />
-            <Route path="/products" element={<Products userId={userId} />} />
-            <Route path="/cart" element={<ProductList />} />
-          </Routes>
-        ) : (
+        ) : role === "admin" ? (
           <Routes>
             <Route path="/" element={<Navigate to="/admin/products" />} />
             <Route path="/admin/products" element={<AdminProductList />} />
             <Route path="/admin/orders" element={<Orders />} />
+          </Routes>
+        ) : (
+          <Routes>
+            <Route path="/" element={<Navigate to="/products" />} />
+            <Route path="/products" element={<Products userId={userId} />} />
+            <Route path="/cart" element={<ProductList userId={userId} />} />
           </Routes>
         )}
       </div>

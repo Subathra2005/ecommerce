@@ -3,10 +3,10 @@ import axios from "axios";
 import Footer from "./Footer"; 
 import API_BASE_URL from "../config";
 
-export default function ProductList() {
+export default function ProductList({ userId: propUserId }) {
   const [productList, setProductList] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
-  const userId = localStorage.getItem("userId"); // Or however you're storing it
+  const userId = propUserId || localStorage.getItem("userId");
 
   // Fetch products when component mounts
   useEffect(() => {
