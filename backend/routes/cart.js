@@ -213,17 +213,13 @@ router.post("/checkout", async (req, res) => {
         console.log("Order details (JSON):", JSON.stringify(orderDetails)); // ✅ DEBUG
         console.log("User ID:", userId); // ✅ DEBUG
 
-        try {
-          await db
-            .promise()
-            .query(
-              "INSERT INTO orders (user_id, order_details) VALUES (?, ?)",
-              [userId, JSON.stringify(orderDetails)]
-            );
-          console.log("✅ Order inserted into DB");
-        } catch (error) {
-          console.error("❌ Error inserting order into DB:", error); // ✅ DEBUG
-        }
+        await db
+          .promise()
+          .query(
+            "INSERT INTO orders (user_id, order_details) VALUES (?, ?)",
+            [userId, JSON.stringify(orderDetails)]
+          );
+        console.log("✅ Order inserted into DB");
 
         // Step 3: Send email
         const orderDate = new Date(Date.now()).toLocaleString();
@@ -231,32 +227,56 @@ router.post("/checkout", async (req, res) => {
           .map((item) => `${item.name} (${item.price}) x${item.quantity}`)
           .join("\n");
 
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST || "smtp.gmail.com",
-          port: Number(process.env.SMTP_PORT || 465),
-          secure: String(process.env.SMTP_SECURE || "true") === "true",
-          service: process.env.SMTP_SERVICE || "gmail",
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
+        let emailStatus = "skipped";
+        let emailWarning = null;
+        const hasSmtpCredentials =
+          Boolean(process.env.SMTP_USER) && Boolean(process.env.SMTP_PASS);
 
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          to: email,
-          subject: "Purchase Confirmation",
-          text: `Thank you for your purchase!\n\nItems:\n${itemsList}\n\nTotal: ₹${totalAmount}\nDate: ${orderDate}`,
-        });
+        if (email && hasSmtpCredentials) {
+          try {
+            const transporter = nodemailer.createTransport({
+              host: process.env.SMTP_HOST || "smtp.gmail.com",
+              port: Number(process.env.SMTP_PORT || 465),
+              secure: String(process.env.SMTP_SECURE || "true") === "true",
+              service: process.env.SMTP_SERVICE || "gmail",
+              auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+              },
+            });
+
+            await transporter.sendMail({
+              from: process.env.SMTP_FROM || process.env.SMTP_USER,
+              to: email,
+              subject: "Purchase Confirmation",
+              text: `Thank you for your purchase!\n\nItems:\n${itemsList}\n\nTotal: ₹${totalAmount}\nDate: ${orderDate}`,
+            });
+
+            emailStatus = "sent";
+          } catch (mailErr) {
+            emailStatus = "failed";
+            emailWarning = "Order placed, but confirmation email could not be sent.";
+            console.error("Email send failed:", mailErr.message);
+          }
+        } else {
+          emailWarning = "Order placed, but email is not configured on the server.";
+        }
 
         // Step 4: Clear cart
         await db
           .promise()
           .query("DELETE FROM cart_items WHERE user_id = ?", [userId]);
 
+        const message =
+          emailStatus === "sent"
+            ? "Purchase complete. Email sent and order recorded."
+            : "Purchase complete. Order recorded.";
+
         res.json({
           success: true,
-          message: "Purchase complete. Email sent and order recorded.",
+          message,
+          emailStatus,
+          warning: emailWarning,
         });
       } catch (err) {
         console.error("Checkout error:", err);
