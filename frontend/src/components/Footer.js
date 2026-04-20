@@ -10,10 +10,11 @@ export default function Footer(props) {
       email: props.email
     });
 
-    alert(response.data.message);
+      const warning = response.data?.warning;
+      alert(warning ? `${response.data.message}\n${warning}` : response.data.message);
   } catch (err) {
     console.error('Checkout failed:', err.response?.data || err);
-    alert('Checkout failed. See console for details.');
+      alert(err.response?.data?.message || 'Checkout failed. See console for details.');
   }
 };
   return (
